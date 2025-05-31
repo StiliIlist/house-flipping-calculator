@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>House Flipping Calculator</title>
+    <title>House Flipping Calculator - Debugged</title>
     <style>
         * {
             margin: 0;
@@ -221,7 +221,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>🏠 House Flipping Calculator </h1>
+            <h1>🏠 House Flipping Calculator (Debugged)</h1>
             <p>Professional Real Estate Investment Analysis Tool</p>
         </div>
         
@@ -246,9 +246,10 @@
                         <div class="error-message" id="inspectionCosts-error"></div>
                     </div>
                     <div class="input-group">
-                        <label for="realtorCommission">Realtor Commission (%) - Buy Side</label>
-                        <input type="number" id="realtorCommission" value="3" step="0.1" min="0" max="10">
+                        <label for="realtorCommission">Buyer Agent Fee (%) - Optional</label>
+                        <input type="number" id="realtorCommission" value="0" step="0.1" min="0" max="5">
                         <div class="error-message" id="realtorCommission-error"></div>
+                        <small style="color: #666; font-size: 0.8em;">Usually $0 - paid by seller. Only enter if you're paying directly.</small>
                     </div>
                 </div>
                 
@@ -406,7 +407,7 @@
             
             <!-- Debug Panel -->
             <div class="debug-panel">
-                <button class="debug-toggle" onclick="toggleDebug">🐛 Toggle Debug Info</button>
+                <button class="debug-toggle" onclick="toggleDebug()">🐛 Toggle Debug Info</button>
                 <div class="debug-content" id="debugContent">
                     <h4>Debug Information:</h4>
                     <div id="debugOutput"></div>
@@ -418,11 +419,11 @@
     <script>
         let debugMode = false;
         
-        function toggleDebug {
+        function toggleDebug() {
             debugMode = !debugMode;
             const debugContent = document.getElementById('debugContent');
             debugContent.style.display = debugMode ? 'block' : 'none';
-            if (debugMode) calculateAll;
+            if (debugMode) calculateAll();
         }
         
         function validateInput(id, value, min = 0, max = Infinity, label = '') {
@@ -472,7 +473,7 @@
             return isNaN(parsed) ? fallback : parsed;
         }
 
-        function calculateAll {
+        function calculateAll() {
             try {
                 // Get all input values with validation
                 const purchasePrice = safeParseFloat(document.getElementById('purchasePrice').value);
@@ -502,7 +503,7 @@
                 // Validate inputs
                 let allValid = true;
                 allValid &= validateInput('purchasePrice', purchasePrice, 1000, 10000000, 'Purchase Price');
-                allValid &= validateInput('realtorCommission', realtorCommission, 0, 10, 'Realtor Commission');
+                allValid &= validateInput('realtorCommission', realtorCommission, 0, 5, 'Buyer Agent Fee');
                 allValid &= validateInput('contingency', contingency, 0, 50, 'Contingency');
                 allValid &= validateInput('monthsToComplete', monthsToComplete, 0.5, 60, 'Project Timeline');
                 allValid &= validateInput('interestRate', interestRate, 0, 30, 'Interest Rate');
@@ -583,7 +584,7 @@
         }
 
         // Add event listeners to all inputs
-        document.addEventListener('DOMContentLoaded', function {
+        document.addEventListener('DOMContentLoaded', function() {
             const inputs = document.querySelectorAll('input[type="number"]');
             inputs.forEach(input => {
                 input.addEventListener('input', calculateAll);
@@ -591,9 +592,8 @@
             });
             
             // Initial calculation
-            calculateAll;
+            calculateAll();
         });
     </script>
 </body>
 </html>
-"Add calculator"
