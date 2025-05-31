@@ -221,7 +221,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>🏠 House Flipping Calculator (Debugged)</h1>
+            <h1>🏠 House Flipping Calculator </h1>
             <p>Professional Real Estate Investment Analysis Tool</p>
         </div>
         
@@ -406,7 +406,7 @@
             
             <!-- Debug Panel -->
             <div class="debug-panel">
-                <button class="debug-toggle" onclick="toggleDebug()">🐛 Toggle Debug Info</button>
+                <button class="debug-toggle" onclick="toggleDebug">🐛 Toggle Debug Info</button>
                 <div class="debug-content" id="debugContent">
                     <h4>Debug Information:</h4>
                     <div id="debugOutput"></div>
@@ -418,11 +418,11 @@
     <script>
         let debugMode = false;
         
-        function toggleDebug() {
+        function toggleDebug {
             debugMode = !debugMode;
             const debugContent = document.getElementById('debugContent');
             debugContent.style.display = debugMode ? 'block' : 'none';
-            if (debugMode) calculateAll();
+            if (debugMode) calculateAll;
         }
         
         function validateInput(id, value, min = 0, max = Infinity, label = '') {
@@ -472,7 +472,7 @@
             return isNaN(parsed) ? fallback : parsed;
         }
 
-        function calculateAll() {
+        function calculateAll {
             try {
                 // Get all input values with validation
                 const purchasePrice = safeParseFloat(document.getElementById('purchasePrice').value);
@@ -583,7 +583,7 @@
         }
 
         // Add event listeners to all inputs
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function {
             const inputs = document.querySelectorAll('input[type="number"]');
             inputs.forEach(input => {
                 input.addEventListener('input', calculateAll);
@@ -591,7 +591,7 @@
             });
             
             // Initial calculation
-            calculateAll();
+            calculateAll;
         });
     </script>
 </body>
