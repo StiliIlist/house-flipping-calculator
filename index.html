@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>House Flipping Calculator - Debugged</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #2c3e50, #3498db);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            font-weight: 300;
+            margin-bottom: 10px;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .calculator-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            border-left: 5px solid #3498db;
+        }
+        
+        .section h3 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+            font-weight: 600;
+        }
+        
+        .input-group {
+            margin-bottom: 15px;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #34495e;
+            font-weight: 500;
+        }
+        
+        .input-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e6ed;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        .input-group input:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+        
+        .input-group input.error {
+            border-color: #e74c3c;
+            background-color: #ffeaea;
+        }
+        
+        .error-message {
+            color: #e74c3c;
+            font-size: 0.8em;
+            margin-top: 3px;
+            display: none;
+        }
+        
+        .results {
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-top: 30px;
+            transition: all 0.3s ease;
+        }
+        
+        .results h3 {
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        
+        .result-item {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            backdrop-filter: blur(5px);
+        }
+        
+        .result-item .label {
+            font-size: 0.9em;
+            opacity: 0.9;
+            margin-bottom: 5px;
+        }
+        
+        .result-item .value {
+            font-size: 1.8em;
+            font-weight: bold;
+        }
+        
+        .profit-positive {
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+        }
+        
+        .profit-negative {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+        }
+        
+        .roi-excellent {
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+        }
+        
+        .timeline {
+            background: #ecf0f1;
+            padding: 25px;
+            border-radius: 15px;
+            margin-top: 20px;
+        }
+        
+        .timeline h4 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+        
+        .timeline-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #bdc3c7;
+        }
+        
+        .timeline-item:last-child {
+            border-bottom: none;
+        }
+        
+        .debug-panel {
+            background: #2c3e50;
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+        
+        .debug-toggle {
+            background: #34495e;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+        
+        .debug-content {
+            display: none;
+        }
+        
+        @media (max-width: 768px) {
+            .calculator-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .results-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏠 House Flipping Calculator (Debugged)</h1>
+            <p>Professional Real Estate Investment Analysis Tool</p>
+        </div>
+        
+        <div class="content">
+            <div class="calculator-grid">
+                <!-- Purchase & Acquisition -->
+                <div class="section">
+                    <h3>📝 Purchase & Acquisition</h3>
+                    <div class="input-group">
+                        <label for="purchasePrice">Purchase Price ($)</label>
+                        <input type="number" id="purchasePrice" value="150000" step="1000" min="0">
+                        <div class="error-message" id="purchasePrice-error"></div>
+                    </div>
+                    <div class="input-group">
+                        <label for="closingCosts">Closing Costs ($)</label>
+                        <input type="number" id="closingCosts" value="3000" step="100" min="0">
+                        <div class="error-message" id="closingCosts-error"></div>
+                    </div>
+                    <div class="input-group">
+                        <label for="inspectionCosts">Inspection & Due Diligence ($)</label>
+                        <input type="number" id="inspectionCosts" value="500" step="50" min="0">
+                        <div class="error-message" id="inspectionCosts-error"></div>
+                    </div>
+                    <div class="input-group">
+                        <label for="realtorCommission">Realtor Commission (%) - Buy Side</label>
+                        <input type="number" id="realtorCommission" value="3" step="0.1" min="0" max="10">
+                        <div class="error-message" id="realtorCommission-error"></div>
+                    </div>
+                </div>
+                
+                <!-- Renovation Costs -->
+                <div class="section">
+                    <h3>🔨 Renovation Costs</h3>
+                    <div class="input-group">
+                        <label for="kitchenBath">Kitchen & Bathrooms ($)</label>
+                        <input type="number" id="kitchenBath" value="15000" step="500" min="0">
+                        <div class="error-message" id="kitchenBath-error"></div>
+                    </div>
+                    <div class="input-group">
+                        <label for="flooring">Flooring ($)</label>
+                        <input type="number" id="flooring" value="8000" step="500" min="0">
+                        <div class="error-message" id="flooring-error"></div>
+                    </div>
+                    <div class="input-group">
+                        <label for="painting">Painting & Drywall ($)</label>
+                        <input type="number" id="painting" value="3000" step="250" min="0">
+                        <div class="error-message" id="painting-error"></div>
+                    </div>
+                    <div class="input-group">
+                        <label for="roofHVAC">Roof & HVAC ($)</label>
+                        <input type="number" id="roofHVAC" value="5000" step="500" min="0">
+                        <div class="error-message" id="roofHVAC-error"></div>
+                    </div>
+                    <div class="input-group">
+                        <label for="otherReno">Other Renovations ($)</label>
+                        <input type="number" id="otherReno" value="4000" step="250" min="0">
+                        <div class="error-message" id="otherReno-error"></div>
+                    </div>
+                    <div class="input-group">
+                        <label for="contingency">Contingency (% of reno costs)</label>
+                        <input type="number" id="contingency" value="10" step="1" min="0" max="50">
+                        <div class="error-message" id="contingency-error"></div>
+                    </div>
+                </div>
+                
+                <!-- Carrying Costs -->
+                <div class="section">
+                    <h3>💰 Carrying Costs</h3>
+                    <div class="input-group">
+                        <label for="monthsToComplete">Project Timeline (months)</label>
+                        <input type="number" id="monthsToComplete" value="4" step="0.5" min="0.5" max="60">
+                        <div class="error-message" id="monthsToComplete-error"></div>
+                    </div>
+                    <div class="input-group">
+                        <label for="interestRate">Loan Interest Rate (%)</label>
+                        <input type="number" id="interestRate" value="8" step="0.1" min="0" max="30">
+                        <div class="error-message" id="interestRate-error"></div>
+                    </div>
+                    <div class="input-group">
+                        <label for="loanAmount">Loan Amount ($)</label>
+                        <input type="number" id="loanAmount" value="120000" step="1000" min="0">
+                        <div class="error-message" id="loanAmount-error"></div>
+                    </div>
+                    <div class="input-group">
+                        <label for="monthlyInsurance">Monthly Insurance ($)</label>
+                        <input type="number" id="monthlyInsurance" value="150" step="25" min="0">
+                        <div class="error-message" id="monthlyInsurance-error"></div>
+                    </div>
+                    <div class="input-group">
+                        <label for="monthlyTaxes">Monthly Property Taxes ($)</label>
+                        <input type="number" id="monthlyTaxes" value="300" step="25" min="0">
+                        <div class="error-message" id="monthlyTaxes-error"></div>
+                    </div>
+                    <div class="input-group">
+                        <label for="monthlyUtilities">Monthly Utilities ($)</label>
+                        <input type="number" id="monthlyUtilities" value="200" step="25" min="0">
+                        <div class="error-message" id="monthlyUtilities-error"></div>
+                    </div>
+                </div>
+                
+                <!-- Sale Information -->
+                <div class="section">
+                    <h3>🏷️ Sale Information</h3>
+                    <div class="input-group">
+                        <label for="salePrice">Expected Sale Price ($)</label>
+                        <input type="number" id="salePrice" value="220000" step="1000" min="0">
+                        <div class="error-message" id="salePrice-error"></div>
+                    </div>
+                    <div class="input-group">
+                        <label for="sellingCommission">Selling Commission (%)</label>
+                        <input type="number" id="sellingCommission" value="6" step="0.1" min="0" max="15">
+                        <div class="error-message" id="sellingCommission-error"></div>
+                    </div>
+                    <div class="input-group">
+                        <label for="sellingClosingCosts">Selling Closing Costs ($)</label>
+                        <input type="number" id="sellingClosingCosts" value="2000" step="100" min="0">
+                        <div class="error-message" id="sellingClosingCosts-error"></div>
+                    </div>
+                    <div class="input-group">
+                        <label for="stagingCosts">Staging & Marketing ($)</label>
+                        <input type="number" id="stagingCosts" value="1500" step="100" min="0">
+                        <div class="error-message" id="stagingCosts-error"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Results Section -->
+            <div class="results" id="resultsSection">
+                <h3>📊 Project Analysis</h3>
+                <div class="results-grid">
+                    <div class="result-item">
+                        <div class="label">Total Investment</div>
+                        <div class="value" id="totalInvestment">$0</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="label">Net Sale Proceeds</div>
+                        <div class="value" id="netProceeds">$0</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="label">Total Profit</div>
+                        <div class="value" id="totalProfit">$0</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="label">ROI</div>
+                        <div class="value" id="roi">0%</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="label">Profit per Month</div>
+                        <div class="value" id="profitPerMonth">$0</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="label">Break-even Price</div>
+                        <div class="value" id="breakEven">$0</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Timeline -->
+            <div class="timeline">
+                <h4>💡 Project Breakdown</h4>
+                <div class="timeline-item">
+                    <span>Purchase Price + Acquisition:</span>
+                    <span id="acquisitionTotal">$0</span>
+                </div>
+                <div class="timeline-item">
+                    <span>Total Renovation Costs:</span>
+                    <span id="renovationTotal">$0</span>
+                </div>
+                <div class="timeline-item">
+                    <span>Carrying Costs:</span>
+                    <span id="carryingTotal">$0</span>
+                </div>
+                <div class="timeline-item">
+                    <span>Selling Costs:</span>
+                    <span id="sellingTotal">$0</span>
+                </div>
+                <div class="timeline-item" style="font-weight: bold; border-top: 2px solid #3498db; padding-top: 10px;">
+                    <span>Total Project Cost:</span>
+                    <span id="totalCost">$0</span>
+                </div>
+            </div>
+            
+            <!-- Debug Panel -->
+            <div class="debug-panel">
+                <button class="debug-toggle" onclick="toggleDebug()">🐛 Toggle Debug Info</button>
+                <div class="debug-content" id="debugContent">
+                    <h4>Debug Information:</h4>
+                    <div id="debugOutput"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let debugMode = false;
+        
+        function toggleDebug() {
+            debugMode = !debugMode;
+            const debugContent = document.getElementById('debugContent');
+            debugContent.style.display = debugMode ? 'block' : 'none';
+            if (debugMode) calculateAll();
+        }
+        
+        function validateInput(id, value, min = 0, max = Infinity, label = '') {
+            const input = document.getElementById(id);
+            const errorEl = document.getElementById(id + '-error');
+            let isValid = true;
+            let errorMsg = '';
+            
+            // Reset styles
+            input.classList.remove('error');
+            errorEl.style.display = 'none';
+            
+            if (isNaN(value) || value === null || value === undefined) {
+                errorMsg = `${label} must be a valid number`;
+                isValid = false;
+            } else if (value < min) {
+                errorMsg = `${label} cannot be less than ${min}`;
+                isValid = false;
+            } else if (value > max) {
+                errorMsg = `${label} cannot be greater than ${max}`;
+                isValid = false;
+            }
+            
+            if (!isValid) {
+                input.classList.add('error');
+                errorEl.textContent = errorMsg;
+                errorEl.style.display = 'block';
+            }
+            
+            return isValid;
+        }
+
+        function formatCurrency(amount) {
+            if (isNaN(amount) || amount === null || amount === undefined) {
+                return '$0';
+            }
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            }).format(amount);
+        }
+
+        function safeParseFloat(value, fallback = 0) {
+            const parsed = parseFloat(value);
+            return isNaN(parsed) ? fallback : parsed;
+        }
+
+        function calculateAll() {
+            try {
+                // Get all input values with validation
+                const purchasePrice = safeParseFloat(document.getElementById('purchasePrice').value);
+                const closingCosts = safeParseFloat(document.getElementById('closingCosts').value);
+                const inspectionCosts = safeParseFloat(document.getElementById('inspectionCosts').value);
+                const realtorCommission = safeParseFloat(document.getElementById('realtorCommission').value);
+                
+                const kitchenBath = safeParseFloat(document.getElementById('kitchenBath').value);
+                const flooring = safeParseFloat(document.getElementById('flooring').value);
+                const painting = safeParseFloat(document.getElementById('painting').value);
+                const roofHVAC = safeParseFloat(document.getElementById('roofHVAC').value);
+                const otherReno = safeParseFloat(document.getElementById('otherReno').value);
+                const contingency = safeParseFloat(document.getElementById('contingency').value);
+                
+                const monthsToComplete = safeParseFloat(document.getElementById('monthsToComplete').value, 1);
+                const interestRate = safeParseFloat(document.getElementById('interestRate').value);
+                const loanAmount = safeParseFloat(document.getElementById('loanAmount').value);
+                const monthlyInsurance = safeParseFloat(document.getElementById('monthlyInsurance').value);
+                const monthlyTaxes = safeParseFloat(document.getElementById('monthlyTaxes').value);
+                const monthlyUtilities = safeParseFloat(document.getElementById('monthlyUtilities').value);
+                
+                const salePrice = safeParseFloat(document.getElementById('salePrice').value);
+                const sellingCommission = safeParseFloat(document.getElementById('sellingCommission').value);
+                const sellingClosingCosts = safeParseFloat(document.getElementById('sellingClosingCosts').value);
+                const stagingCosts = safeParseFloat(document.getElementById('stagingCosts').value);
+
+                // Validate inputs
+                let allValid = true;
+                allValid &= validateInput('purchasePrice', purchasePrice, 1000, 10000000, 'Purchase Price');
+                allValid &= validateInput('realtorCommission', realtorCommission, 0, 10, 'Realtor Commission');
+                allValid &= validateInput('contingency', contingency, 0, 50, 'Contingency');
+                allValid &= validateInput('monthsToComplete', monthsToComplete, 0.5, 60, 'Project Timeline');
+                allValid &= validateInput('interestRate', interestRate, 0, 30, 'Interest Rate');
+                allValid &= validateInput('salePrice', salePrice, 1000, 20000000, 'Sale Price');
+                allValid &= validateInput('sellingCommission', sellingCommission, 0, 15, 'Selling Commission');
+
+                // Calculations with safety checks
+                const buyCommission = purchasePrice * (realtorCommission / 100);
+                const acquisitionTotal = purchasePrice + closingCosts + inspectionCosts + buyCommission;
+                
+                const baseRenovation = kitchenBath + flooring + painting + roofHVAC + otherReno;
+                const contingencyAmount = baseRenovation * (contingency / 100);
+                const renovationTotal = baseRenovation + contingencyAmount;
+                
+                const monthlyInterest = loanAmount > 0 ? (loanAmount * (interestRate / 100)) / 12 : 0;
+                const monthlyCarrying = monthlyInterest + monthlyInsurance + monthlyTaxes + monthlyUtilities;
+                const carryingTotal = monthlyCarrying * monthsToComplete;
+                
+                const sellCommission = salePrice * (sellingCommission / 100);
+                const sellingTotal = sellCommission + sellingClosingCosts + stagingCosts;
+                
+                const totalInvestment = acquisitionTotal + renovationTotal + carryingTotal;
+                const netProceeds = salePrice - sellingTotal;
+                const totalProfit = netProceeds - totalInvestment;
+                const roi = totalInvestment > 0 ? (totalProfit / totalInvestment) * 100 : 0;
+                const profitPerMonth = monthsToComplete > 0 ? totalProfit / monthsToComplete : 0;
+                const breakEven = totalInvestment + sellingTotal;
+
+                // Update display
+                document.getElementById('acquisitionTotal').textContent = formatCurrency(acquisitionTotal);
+                document.getElementById('renovationTotal').textContent = formatCurrency(renovationTotal);
+                document.getElementById('carryingTotal').textContent = formatCurrency(carryingTotal);
+                document.getElementById('sellingTotal').textContent = formatCurrency(sellingTotal);
+                document.getElementById('totalCost').textContent = formatCurrency(totalInvestment);
+                
+                document.getElementById('totalInvestment').textContent = formatCurrency(totalInvestment);
+                document.getElementById('netProceeds').textContent = formatCurrency(netProceeds);
+                document.getElementById('totalProfit').textContent = formatCurrency(totalProfit);
+                document.getElementById('roi').textContent = roi.toFixed(1) + '%';
+                document.getElementById('profitPerMonth').textContent = formatCurrency(profitPerMonth);
+                document.getElementById('breakEven').textContent = formatCurrency(breakEven);
+
+                // Update results section styling based on profit
+                const resultsSection = document.getElementById('resultsSection');
+                if (totalProfit > 0) {
+                    resultsSection.className = 'results profit-positive';
+                } else {
+                    resultsSection.className = 'results profit-negative';
+                }
+                
+                // Debug output
+                if (debugMode) {
+                    const debugOutput = document.getElementById('debugOutput');
+                    debugOutput.innerHTML = `
+                        <div>Purchase Price: ${formatCurrency(purchasePrice)}</div>
+                        <div>Buy Commission: ${formatCurrency(buyCommission)}</div>
+                        <div>Acquisition Total: ${formatCurrency(acquisitionTotal)}</div>
+                        <div>Base Renovation: ${formatCurrency(baseRenovation)}</div>
+                        <div>Contingency Amount: ${formatCurrency(contingencyAmount)}</div>
+                        <div>Monthly Interest: ${formatCurrency(monthlyInterest)}</div>
+                        <div>Monthly Carrying: ${formatCurrency(monthlyCarrying)}</div>
+                        <div>Sell Commission: ${formatCurrency(sellCommission)}</div>
+                        <div>Net Proceeds: ${formatCurrency(netProceeds)}</div>
+                        <div>Total Investment: ${formatCurrency(totalInvestment)}</div>
+                        <div>Total Profit: ${formatCurrency(totalProfit)}</div>
+                        <div>ROI: ${roi.toFixed(2)}%</div>
+                        <div>Break Even: ${formatCurrency(breakEven)}</div>
+                        <div>All Inputs Valid: ${allValid}</div>
+                    `;
+                }
+                
+            } catch (error) {
+                console.error('Calculation error:', error);
+                if (debugMode) {
+                    document.getElementById('debugOutput').innerHTML = `<div style="color: #e74c3c;">Error: ${error.message}</div>`;
+                }
+            }
+        }
+
+        // Add event listeners to all inputs
+        document.addEventListener('DOMContentLoaded', function() {
+            const inputs = document.querySelectorAll('input[type="number"]');
+            inputs.forEach(input => {
+                input.addEventListener('input', calculateAll);
+                input.addEventListener('blur', calculateAll); // Recalculate on focus loss
+            });
+            
+            // Initial calculation
+            calculateAll();
+        });
+    </script>
+</body>
+</html>
+"Add calculator"
