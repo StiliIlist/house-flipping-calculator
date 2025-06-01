@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>House Flipping Calculator - Debugged</title>
+    <title>House Flipping Calculator - Debug Fixed</title>
     <style>
         * {
             margin: 0;
@@ -221,7 +221,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>🏠 House Flipping Calculator (Debugged)</h1>
+            <h1>🏠 House Flipping Calculator (Debug Fixed)</h1>
             <p>Professional Real Estate Investment Analysis Tool</p>
         </div>
         
@@ -436,7 +436,7 @@
             input.classList.remove('error');
             errorEl.style.display = 'none';
             
-            if (isNaN(value) || value === null || value === undefined) {
+            if (isNaN(value) || value === null || value === undefined || value === '') {
                 errorMsg = `${label} must be a valid number`;
                 isValid = false;
             } else if (value < min) {
@@ -469,6 +469,9 @@
         }
 
         function safeParseFloat(value, fallback = 0) {
+            if (value === '' || value === null || value === undefined) {
+                return fallback;
+            }
             const parsed = parseFloat(value);
             return isNaN(parsed) ? fallback : parsed;
         }
@@ -500,15 +503,11 @@
                 const sellingClosingCosts = safeParseFloat(document.getElementById('sellingClosingCosts').value);
                 const stagingCosts = safeParseFloat(document.getElementById('stagingCosts').value);
 
-                // Validate inputs
+                // Validate critical inputs only (to avoid overwhelming user with errors)
                 let allValid = true;
-                allValid &= validateInput('purchasePrice', purchasePrice, 1000, 10000000, 'Purchase Price');
-                allValid &= validateInput('realtorCommission', realtorCommission, 0, 5, 'Buyer Agent Fee');
-                allValid &= validateInput('contingency', contingency, 0, 50, 'Contingency');
-                allValid &= validateInput('monthsToComplete', monthsToComplete, 0.5, 60, 'Project Timeline');
-                allValid &= validateInput('interestRate', interestRate, 0, 30, 'Interest Rate');
-                allValid &= validateInput('salePrice', salePrice, 1000, 20000000, 'Sale Price');
-                allValid &= validateInput('sellingCommission', sellingCommission, 0, 15, 'Selling Commission');
+                allValid = validateInput('purchasePrice', purchasePrice, 1000, 10000000, 'Purchase Price') && allValid;
+                allValid = validateInput('salePrice', salePrice, 1000, 20000000, 'Sale Price') && allValid;
+                allValid = validateInput('monthsToComplete', monthsToComplete, 0.5, 60, 'Project Timeline') && allValid;
 
                 // Calculations with safety checks
                 const buyCommission = purchasePrice * (realtorCommission / 100);
@@ -532,53 +531,73 @@
                 const profitPerMonth = monthsToComplete > 0 ? totalProfit / monthsToComplete : 0;
                 const breakEven = totalInvestment + sellingTotal;
 
-                // Update display
-                document.getElementById('acquisitionTotal').textContent = formatCurrency(acquisitionTotal);
-                document.getElementById('renovationTotal').textContent = formatCurrency(renovationTotal);
-                document.getElementById('carryingTotal').textContent = formatCurrency(carryingTotal);
-                document.getElementById('sellingTotal').textContent = formatCurrency(sellingTotal);
-                document.getElementById('totalCost').textContent = formatCurrency(totalInvestment);
-                
-                document.getElementById('totalInvestment').textContent = formatCurrency(totalInvestment);
-                document.getElementById('netProceeds').textContent = formatCurrency(netProceeds);
-                document.getElementById('totalProfit').textContent = formatCurrency(totalProfit);
-                document.getElementById('roi').textContent = roi.toFixed(1) + '%';
-                document.getElementById('profitPerMonth').textContent = formatCurrency(profitPerMonth);
-                document.getElementById('breakEven').textContent = formatCurrency(breakEven);
+                // Update display elements (check if they exist before updating)
+                const elements = {
+                    'acquisitionTotal': acquisitionTotal,
+                    'renovationTotal': renovationTotal,
+                    'carryingTotal': carryingTotal,
+                    'sellingTotal': sellingTotal,
+                    'totalCost': totalInvestment,
+                    'totalInvestment': totalInvestment,
+                    'netProceeds': netProceeds,
+                    'totalProfit': totalProfit,
+                    'profitPerMonth': profitPerMonth,
+                    'breakEven': breakEven
+                };
+
+                for (const [id, value] of Object.entries(elements)) {
+                    const element = document.getElementById(id);
+                    if (element) {
+                        element.textContent = formatCurrency(value);
+                    }
+                }
+
+                // Special handling for ROI
+                const roiElement = document.getElementById('roi');
+                if (roiElement) {
+                    roiElement.textContent = roi.toFixed(1) + '%';
+                }
 
                 // Update results section styling based on profit
                 const resultsSection = document.getElementById('resultsSection');
-                if (totalProfit > 0) {
-                    resultsSection.className = 'results profit-positive';
-                } else {
-                    resultsSection.className = 'results profit-negative';
+                if (resultsSection) {
+                    if (totalProfit > 0) {
+                        resultsSection.className = 'results profit-positive';
+                    } else {
+                        resultsSection.className = 'results profit-negative';
+                    }
                 }
                 
                 // Debug output
                 if (debugMode) {
                     const debugOutput = document.getElementById('debugOutput');
-                    debugOutput.innerHTML = `
-                        <div>Purchase Price: ${formatCurrency(purchasePrice)}</div>
-                        <div>Buy Commission: ${formatCurrency(buyCommission)}</div>
-                        <div>Acquisition Total: ${formatCurrency(acquisitionTotal)}</div>
-                        <div>Base Renovation: ${formatCurrency(baseRenovation)}</div>
-                        <div>Contingency Amount: ${formatCurrency(contingencyAmount)}</div>
-                        <div>Monthly Interest: ${formatCurrency(monthlyInterest)}</div>
-                        <div>Monthly Carrying: ${formatCurrency(monthlyCarrying)}</div>
-                        <div>Sell Commission: ${formatCurrency(sellCommission)}</div>
-                        <div>Net Proceeds: ${formatCurrency(netProceeds)}</div>
-                        <div>Total Investment: ${formatCurrency(totalInvestment)}</div>
-                        <div>Total Profit: ${formatCurrency(totalProfit)}</div>
-                        <div>ROI: ${roi.toFixed(2)}%</div>
-                        <div>Break Even: ${formatCurrency(breakEven)}</div>
-                        <div>All Inputs Valid: ${allValid}</div>
-                    `;
+                    if (debugOutput) {
+                        debugOutput.innerHTML = `
+                            <div>Purchase Price: ${formatCurrency(purchasePrice)}</div>
+                            <div>Buy Commission: ${formatCurrency(buyCommission)}</div>
+                            <div>Acquisition Total: ${formatCurrency(acquisitionTotal)}</div>
+                            <div>Base Renovation: ${formatCurrency(baseRenovation)}</div>
+                            <div>Contingency Amount: ${formatCurrency(contingencyAmount)}</div>
+                            <div>Monthly Interest: ${formatCurrency(monthlyInterest)}</div>
+                            <div>Monthly Carrying: ${formatCurrency(monthlyCarrying)}</div>
+                            <div>Sell Commission: ${formatCurrency(sellCommission)}</div>
+                            <div>Net Proceeds: ${formatCurrency(netProceeds)}</div>
+                            <div>Total Investment: ${formatCurrency(totalInvestment)}</div>
+                            <div>Total Profit: ${formatCurrency(totalProfit)}</div>
+                            <div>ROI: ${roi.toFixed(2)}%</div>
+                            <div>Break Even: ${formatCurrency(breakEven)}</div>
+                            <div>All Critical Inputs Valid: ${allValid}</div>
+                        `;
+                    }
                 }
                 
             } catch (error) {
                 console.error('Calculation error:', error);
                 if (debugMode) {
-                    document.getElementById('debugOutput').innerHTML = `<div style="color: #e74c3c;">Error: ${error.message}</div>`;
+                    const debugOutput = document.getElementById('debugOutput');
+                    if (debugOutput) {
+                        debugOutput.innerHTML = `<div style="color: #e74c3c;">Error: ${error.message}</div>`;
+                    }
                 }
             }
         }
@@ -587,12 +606,19 @@
         document.addEventListener('DOMContentLoaded', function() {
             const inputs = document.querySelectorAll('input[type="number"]');
             inputs.forEach(input => {
-                input.addEventListener('input', calculateAll);
-                input.addEventListener('blur', calculateAll); // Recalculate on focus loss
+                // Use 'input' event for real-time updates
+                input.addEventListener('input', function() {
+                    // Add small delay to prevent excessive calculations during typing
+                    clearTimeout(input.calcTimeout);
+                    input.calcTimeout = setTimeout(calculateAll, 150);
+                });
+                
+                // Also calculate on blur for final validation
+                input.addEventListener('blur', calculateAll);
             });
             
-            // Initial calculation
-            calculateAll();
+            // Initial calculation after DOM is loaded
+            setTimeout(calculateAll, 100);
         });
     </script>
 </body>
